@@ -1,20 +1,20 @@
-{% extends 'book/base.html' %}
+{% extends 'books/base.html' %}
 
 {% block content %}
-<h1>{{title}}</h1>
-
-<form action="{% url 'add_book' %}" method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-
-    <div class="form-error">{{ form.non_field_errors }}</div>
-
-{% for f in form %}
-<p><label class="form-label" for="{{ f.id_for_label }}">{{f.label}}: </label>{{ f }}</p>
-<div class="form-error">{{ f.errors }}</div>
-{% endfor %}
-
-
-    <button type="submit">Добавить</button>
-</form>
-
-{% endblock %}
+    {% if messages %}
+        {% for message in messages %}
+            <div>
+                <strong{{message|safe}}</strong>
+            </div>
+        {% endfor %}
+    {% else %}
+    {{order}}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>Upload a file</label>
+        <input type="file" name="file">
+        <p>Only accepts CSV files</p>
+        <button type="submit">Upload</button>
+    </form>
+    {% endif %}
+{% endblock content %}
