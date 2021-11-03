@@ -1,8 +1,11 @@
 import csv, io
+
+from django.contrib.auth import logout, login
 from django.contrib.auth.decorators import permission_required
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
+from django.contrib.auth.views import LoginView
+from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView
 
@@ -15,12 +18,27 @@ class BookListView(ListView):
     template_name = 'books/base.html'
 
 
-# class AddBook(LoginRequiredMixin, CreateView):
-#     form_class = AddBookForm
-#     template_name = 'books/addbook.html'
-#     success_url = reverse_lazy('home')
-#     login_url = reverse_lazy('home')
-#     raise_exception = True
+class LoginUser(LoginView):
+    form_class = LoginUserForm
+    template_name = 'books/login.html'
+
+    def get_success_url(self):
+        return reverse_lazy('home')
+
+
+class RegisterUser(CreateView):
+    form_class = RegisterUserForm
+    template_name = 'books/register.html'
+    success_url = reverse_lazy('login')
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user)
+        return redirect('home')
+
+def logout_user(request):
+    logout(request)
+    return redirect('login')
 
 
 @permission_required('admin.can_add_log_entry', login_url='home')
