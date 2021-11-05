@@ -1,7 +1,8 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Мини библиотека</title>
+<title>Мини библиотека</title>
     <li><a href="{% url 'home' %}">Главная страница</a></li>
 	<div>
       <strong>Menu:</strong>
@@ -10,13 +11,13 @@
         <li><a href="{% url 'add_book' %}">Добавить много книг</a></li>
         <li><a href="{% url 'logout' %}">Sign Out</a></li>
         {% else %}
-        <li><a href="{% url 'login' %}">Sign In</a></li>
-        <li><a href="{% url 'register' %}">Sign Up</a></li>
+        <li><a href="{% url 'login' %}">Войти на сайт</a></li>
+        <li><a href="{% url 'register' %}">Зарегистрироваться на сайте</a></li>
         {% endif %}
       </ul>
     </div>
-</head>
 <body>
+
     <main>
         <h2>Список книг</h2>
         {% for book in object_list %}
@@ -28,6 +29,41 @@
         </ul>
         {% endfor %}
     </main>
+
+
+
+<!-- Блок контента -->
+	<div class="content-text">
+{% block content %}
+{% endblock %}
+{% if page_obj.has_other_pages %}
+<nav class="list-pages">
+    <ul>
+{% if page_obj.has_previous %}
+<li class="page-num">
+	<a href="?page={{ page_obj.previous_page_number }}">&lt;</a>
+</li>
+{% endif %}
+
+        {% for p in paginator.page_range %}
+		{% if page_obj.number == p %}
+        <li class="page-num page-num-selected">{{ p }}</li>
+		{% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2  %}
+        <li class="page-num">
+            <a href="?page={{ p }}">{{ p }}</a>
+        </li>
+		{% endif %}
+        {% endfor %}
+
+{% if page_obj.has_next %}
+<li class="page-num">
+	<a href="?page={{ page_obj.next_page_number }}">&gt;</a>
+</li>
+{% endif %}
+
+    </ul>
+</nav>
+{% endif %}
+	</div>
 </body>
 </html>
-
