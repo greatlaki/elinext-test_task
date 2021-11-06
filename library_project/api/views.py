@@ -13,7 +13,8 @@ from django.contrib.auth.models import User
 from rest_framework_simplejwt.views import TokenObtainPairView
 import jwt, datetime
 
-from books.models import Book
+from books.forms import *
+from books.models import *
 from .serializers import BookSerializer, RegisterSerializer, MyTokenObtainPairSerializer
 
 
@@ -41,7 +42,7 @@ class LoginUser(APIView):
     def post(self, request):
         username = request.data['username']
         password = request.data['password']
-
+        print('Hello LoginUser')
         user = User.objects.filter(username=username).first()
 
         payload = {
