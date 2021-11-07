@@ -1,26 +1,24 @@
-from django.contrib.auth import logout
-from pytz import unicode
+import jwt
+from django.conf import settings
+from django.shortcuts import render
+from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+from rest_framework import viewsets
 from rest_framework import generics
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from django.contrib.auth.models import User
-from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.decorators import permission_classes, api_view
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
+from rest_framework import exceptions
 from rest_framework.views import APIView
-from django.contrib.auth.models import User
-from rest_framework_simplejwt.views import TokenObtainPairView
-import jwt, datetime
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from .auth import generate_access_token, generate_refresh_token
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import ensure_csrf_cookie
 
-from books.forms import *
+
+
 from books.models import *
-from .serializers import BookSerializer, RegisterSerializer, MyTokenObtainPairSerializer
-
-
-class MyObtainTokenPairView(TokenObtainPairView):
-    permission_classes = (AllowAny,)
-    serializer_class = MyTokenObtainPairSerializer
+from .serializers import *
 
 
 class BookApiView(generics.ListAPIView, APIView):
@@ -35,57 +33,69 @@ class RegisterUser(generics.CreateAPIView, APIView):
     serializer_class = RegisterSerializer
 
 
-class LoginUser(APIView):
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
-    permission_classes = [IsAuthenticated]
+@api_view(['GET'])
+def user(request):
 
-    def post(self, request):
-        username = request.data['username']
-        password = request.data['password']
-        print('Hello LoginUser')
-        user = User.objects.filter(username=username).first()
-
-        payload = {
-            'id': user.id,
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60),
-            'iat': datetime.datetime.utcnow(),
-        }
-
-        token = jwt.encode(payload, 'secret', algorithm='HS256').decode('utf-8')
-
-        response = Response()
-
-        response.set_cookie(key='jwt', value=token, httponly=True)
-        response.date = {
-            'jwt': token,
-        }
-        return response
+    user = request.user
+    serialized_user = UserSerializer(user).data
+    return Response({'user': serialized_user })
 
 
-class UserView(APIView):
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@ensure_csrf_cookie
+def login_view(request):
+    User = get_user_model()
+    username = request.data.get('username')
+    password = request.data.get('password')
+    response = Response()
+    if (username is None) or (password is None):
+        raise exceptions.AuthenticationFailed(
+            'username and password required')
 
-    def get(self, request):
-        token = request.COOKIES.get('jwt')
+    user = User.objects.filter(username=username).first()
+    if(user is None):
+        raise exceptions.AuthenticationFailed('user not found')
+    if (not user.check_password(password)):
+        raise exceptions.AuthenticationFailed('wrong password')
 
-        if not token:
-            raise AuthenticationFailed('Unauthenticated')
+    serialized_user = UserSerializer(user).data
 
-        try:
-            payload = jwt.decode(token, 'secret', algorithm=['HS256'])
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed('Unauthenticated')
+    access_token = generate_access_token(user)
+    refresh_token = generate_refresh_token(user)
 
-        user = User.objects.get(id=payload['id']).first()
-        serializer = RegisterSerializer(user)
-        return Response(serializer.data)
+    response.set_cookie(key='refreshtoken', value=refresh_token, httponly=True)
+    response.data = {
+        'access_token': access_token,
+        'user': serialized_user,
+    }
+
+    return response
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def user_logout(request):
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@csrf_protect
+def refresh_token_view(request):
+    User = get_user_model()
+    refresh_token = request.COOKIES.get('refreshtoken')
+    if refresh_token is None:
+        raise exceptions.AuthenticationFailed(
+            'Authentication credentials were not provided.')
+    try:
+        payload = jwt.decode(
+            refresh_token, settings.REFRESH_TOKEN_SECRET, algorithms=['HS256'])
+    except jwt.ExpiredSignatureError:
+        raise exceptions.AuthenticationFailed(
+            'expired refresh token, please login again.')
 
-    request.user.auth_token.delete()
+    user = User.objects.filter(id=payload.get('user_id')).first()
+    if user is None:
+        raise exceptions.AuthenticationFailed('User not found')
 
-    logout(request)
+    if not user.is_active:
+        raise exceptions.AuthenticationFailed('user is inactive')
 
-    return Response('User Logged out successfully')
+    access_token = generate_access_token(user)
+    return Response({'access_token': access_token})
+
