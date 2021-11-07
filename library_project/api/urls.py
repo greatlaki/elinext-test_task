@@ -10,6 +10,6 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('token-refresh/', refresh_token_view),
     path('register/', RegisterUser.as_view(), name='auth_register'),
-    path('logout/', user_logout),
+    path('logout/', Logout.as_view()),
 ]
 

@@ -3,7 +3,7 @@ from django.conf import settings
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework import generics
 from rest_framework import exceptions
 from rest_framework.views import APIView
@@ -99,3 +99,9 @@ def refresh_token_view(request):
     access_token = generate_access_token(user)
     return Response({'access_token': access_token})
 
+
+class Logout(APIView):
+    def get(self, request, format=None):
+        # simply delete the token to force a login
+        request.user.auth_token.delete()
+        return Response(status=status.HTTP_200_OK)
