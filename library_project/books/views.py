@@ -27,7 +27,6 @@ class LoginUser(LoginView):
 
 
 class RegisterUser(CreateView):
-    print("Console_______-____-----------")
     form_class = RegisterUserForm
     template_name = 'books/register.html'
     success_url = reverse_lazy('login')
