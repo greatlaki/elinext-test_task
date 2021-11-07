@@ -10,6 +10,7 @@
         {% if user.is_authenticated %}
         <li><a href="{% url 'add_book' %}">Добавить много книг</a></li>
         <li><a href="{% url 'logout' %}">Sign Out</a></li>
+        <li><a href="{% url 'profile' %}">Профиль пользователя</a></li>
         {% else %}
         <li><a href="{% url 'login' %}">Войти на сайт</a></li>
         <li><a href="{% url 'register' %}">Зарегистрироваться на сайте</a></li>

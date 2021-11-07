@@ -143,7 +143,7 @@ MEDIA_URL = '/media/'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-     'demo.verify.JWTAuthentication',
+     'api.verify.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
     'rest_framework.permissions.IsAuthenticated',
