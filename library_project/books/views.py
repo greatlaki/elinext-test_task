@@ -16,23 +16,13 @@ from django_tables2 import RequestConfig
 from django_filters.views import FilterView
 from django_tables2.views import SingleTableMixin
 
-from django.contrib.auth.models import User
-from django.contrib.auth import get_user_model
 
-from api.auth import generate_access_token
-from .models import *
 from .forms import *
 from .tables import *
 
 
 def menu_view(request):
     return render(request, 'books/base.html')
-
-#
-# def books_view(request):
-#     table = BookTable(Book.objects.all())
-#     RequestConfig(request, paginate={"per_page": 20}).configure(table)
-#     return render(request, 'books/view_table.html', {'table': table})
 
 
 class FilteredBookListView(SingleTableMixin, FilterView):
@@ -46,17 +36,7 @@ class LoginUser(LoginView):
     form_class = LoginUserForm
     template_name = 'books/login.html'
 
-    # def form_valid(self, form):
-    #     self.form = form
-    #     return HttpResponseRedirect(self.get_success_url())
-
     def get_success_url(self):
-        # User = get_user_model()
-        # username = self.form.cleaned_data['username']
-        # user = User.objects.filter(username=username).first()
-        # token = generate_access_token(user)
-        # print(token)
-        # cookies = {'token':token}
         return reverse_lazy('home')
 
 
@@ -110,20 +90,4 @@ def book_upload(request):
 def profile(request):
     return render(request, 'books/profile.html')
 
-
-class ChangeUserInfoView(SuccessMessageMixin, LoginRequiredMixin, UpdateView):
-    model = Profile
-    template_name = 'books/change_user_info.html'
-    form_class = ChangeUserInfoForm
-    success_url = reverse_lazy('books/profile.html')
-    success_message = 'Data changed successfully'
-
-    def setup(self, request, *args, **kwargs):
-        self.user_id = request.user.pk
-        return super().setup(request, *args, **kwargs)
-
-    def get_object(self, queryset=None):
-        if not queryset:
-            queryset = self.get_queryset()
-        return get_object_or_404(queryset, pk=self.user_id)
 
