@@ -1,0 +1,17 @@
+{% load render_table from django_tables2 %}
+{% load bootstrap3 %}
+{% load static %}
+
+<title>Список книг</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+
+{% if filter %}
+    <form action="" method="get" class="form form-inline">
+        {% bootstrap_form filter.form layout='inline' %}
+        {% bootstrap_button 'filter' %}
+    </form>
+{% endif %}
+{% render_table table 'django_tables2/bootstrap.html' %}
+    <body>
+    <li><a href="{% url 'home' %}">Вернуться на главную страницу</a></li>
+    </body>

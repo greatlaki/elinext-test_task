@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     # 3rd party
     'rest_framework',
     'corsheaders',
+    'django_tables2',
+    'django_filters',
+    'bootstrap3',
 
     # Local
     'books.apps.BooksConfig',
@@ -71,6 +74,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                #django_tables2
+                'django.template.context_processors.request',
             ],
         },
     },
@@ -151,4 +156,3 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOW_CREDENTIALS = True
-CORS_ORIGIN_WHITELIST = ['http://localhost:3000']
