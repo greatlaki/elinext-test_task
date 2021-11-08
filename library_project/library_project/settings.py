@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1']
 
-
+AUTH_USER_MODEL = 'api.User'
 # Application definition
 
 INSTALLED_APPS = [
@@ -147,11 +147,9 @@ MEDIA_URL = '/media/'
 
 
 REST_FRAMEWORK = {
+    'NON_FIELD_ERRORS_KEY': 'error',
     'DEFAULT_AUTHENTICATION_CLASSES': (
-     'api.verify.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-    'rest_framework.permissions.IsAuthenticated',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
 
