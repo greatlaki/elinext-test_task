@@ -4,6 +4,6 @@ from .views import *
 
 
 urlpatterns = [
-    path('', BookApiView.as_view()),
+    path('register/', RegisterView.as_view(), name='register'),
 ]
 

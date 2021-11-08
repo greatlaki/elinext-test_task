@@ -28,7 +28,7 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('books.urls')),
-    path('api/', include('api.urls')),
+    path('auth/', include('api.urls')),
 ]
 
 if settings.DEBUG:
