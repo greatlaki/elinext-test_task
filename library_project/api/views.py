@@ -1,10 +1,13 @@
 import jwt
 
 from django.shortcuts import render
-from rest_framework import generics, status
+from rest_framework import generics, status, views
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
+
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from .serializers import *
 from .models import *
@@ -28,8 +31,14 @@ class RegisterView(generics.GenericAPIView):
 
 
 class VerifyUsername(generics.GenericAPIView):
-    def get(self,requset):
-        token = requset.GET.get('token')
+    serializer_class = UsernameVerificationSerializer
+
+    token_param_config = openapi.Parameter(
+        'token', in_=openapi.IN_QUERY, description='Description', type=openapi.TYPE_STRING)
+
+    @swagger_auto_schema(manual_parameters=[token_param_config])
+    def get(self, request):
+        token = request.GET.get('token')
         try:
             payload = jwt.decode(token, settings.SECRET_KEY)
             user = User.objects.get(id=payload['user_id'])
@@ -37,7 +46,8 @@ class VerifyUsername(generics.GenericAPIView):
                 user.is_verified = True
                 user.save()
             return Response({'email': 'Successfully activated'}, status=status.HTTP_200_OK)
-        except jwt.ExpiredSignatureErroras as indentifier:
+        except jwt.ExpiredSignatureError as identifier:
             return Response({'error': 'Activation Expired'}, status=status.HTTP_400_BAD_REQUEST)
-        except jwt.exceptions.DecodeError as indentifier:
+        except jwt.exceptions.DecodeError as identifier:
             return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+
