@@ -15,6 +15,8 @@ class UserManager(BaseUserManager):
         user.set_password(password)
         user.save()
 
+        return user
+
     def create_superuser(self, username, password=None):
 
         if password in None:
@@ -30,8 +32,8 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255, unique=True, db_index=True)
-    first_name = models.CharField(max_length=255, blank=True)
-    last_name = models.CharField(max_length=30, blank=True)
+    first_name = models.CharField(max_length=255, blank=False)
+    last_name = models.CharField(max_length=30, blank=False)
     phone_number = models.IntegerField(null=True, blank=True)
     photo = models.ImageField(upload_to="photos/%Y/%m/%d/")
     is_verified = models.BooleanField(default=False)
@@ -40,7 +42,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
 
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     objects = UserManager()
 
