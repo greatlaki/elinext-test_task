@@ -15,6 +15,7 @@ from .forms import *
 
 
 class BookListView(ListView):
+    paginate_by = 5
     model = Book
     template_name = 'books/base.html'
 
