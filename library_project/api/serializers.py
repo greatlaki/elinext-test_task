@@ -1,7 +1,7 @@
-
 from django.contrib import auth
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
+
 
 from .models import *
 
@@ -63,3 +63,4 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['id', 'first_name', 'last_name', 'phone_number', 'photo']
+
