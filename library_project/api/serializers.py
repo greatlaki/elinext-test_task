@@ -1,4 +1,7 @@
+
+from django.contrib import auth
 from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
 
 from .models import *
 
@@ -34,3 +37,25 @@ class UsernameVerificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['token']
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        max_length=68, min_length=6, write_only=True)
+    username = serializers.CharField(
+        max_length=255, min_length=3, read_only=True)
+
+    tokens = serializers.SerializerMethodField()
+
+    def get_tokens(self, obj):
+        user = User.objects.get(email=obj['email'])
+
+        return {
+            'refresh': user.tokens()['refresh'],
+            'access': user.tokens()['access'],
+        }
+
+    class Meta:
+        model = User
+        fields = ['password', 'username', 'tokens']
+
