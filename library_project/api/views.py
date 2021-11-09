@@ -1,7 +1,8 @@
 import jwt
 
 from django.shortcuts import render
-from rest_framework import generics, status, views
+from rest_framework import generics, status, views, permissions
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
@@ -9,6 +10,7 @@ from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from .permissions import IsOwner
 from .serializers import *
 from .models import *
 
@@ -31,7 +33,7 @@ class RegisterView(generics.GenericAPIView):
 
 
 class VerifyUsername(generics.GenericAPIView):
-    serializer_class = UsernameVerificationSerializer
+    serializer_class = UserVerificationSerializer
 
     token_param_config = openapi.Parameter(
         'token', in_=openapi.IN_QUERY, description='Description', type=openapi.TYPE_STRING)
@@ -59,3 +61,25 @@ class LoginAPIView(generics.GenericAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProfileListAPIView(ListCreateAPIView):
+    serializer_class = ProfileSerializer
+    queryset = Profile.objects.all()
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def perform_create(self, serializer):
+        return serializer.save(owner=self.request.user)
+
+    def get_queryset(self):
+        return self.queryset.filter(owner=self.request.user)
+
+
+class ProfileDetailAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = (permissions.IsAuthenticated, IsOwner,)
+    queryset = Profile.objects.all()
+    lookup_field = "id"
+
+    def get_queryset(self):
+        return self.queryset.filter(owner=self.request.user)

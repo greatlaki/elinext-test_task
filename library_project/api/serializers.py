@@ -12,9 +12,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'password',
-                  'first_name', 'last_name',
-                  'phone_number', 'photo']
+        fields = ['username', 'password']
 
     def validate(self, attrs):
         username = attrs.get('username', '')
@@ -31,7 +29,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return User.objects.create_user(**validated_data)
 
 
-class UsernameVerificationSerializer(serializers.ModelSerializer):
+class UserVerificationSerializer(serializers.ModelSerializer):
     token = serializers.CharField(max_length=555)
 
     class Meta:
@@ -48,7 +46,7 @@ class LoginSerializer(serializers.ModelSerializer):
     tokens = serializers.SerializerMethodField()
 
     def get_tokens(self, obj):
-        user = User.objects.get(email=obj['email'])
+        user = User.objects.get(username=obj['username'])
 
         return {
             'refresh': user.tokens()['refresh'],
@@ -59,3 +57,9 @@ class LoginSerializer(serializers.ModelSerializer):
         model = User
         fields = ['password', 'username', 'tokens']
 
+
+class ProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = ['id', 'first_name', 'last_name', 'phone_number', 'photo']
