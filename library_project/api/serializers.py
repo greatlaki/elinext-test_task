@@ -16,8 +16,6 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         username = attrs.get('username', '')
-        first_name = attrs.get('first_name', '')
-        last_name = attrs.get('last_name', '')
 
         if not username.isalnum():
             raise serializers.ValidationError(

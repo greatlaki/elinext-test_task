@@ -1,8 +1,10 @@
 import jwt
 
+from django.views import generic as django_generic
 from django.shortcuts import render
 from rest_framework import generics, status, views, permissions
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
@@ -33,6 +35,12 @@ class RegisterView(generics.GenericAPIView):
         token = RefreshToken.for_user(user).access_token
 
         return Response(user_data, status=status.HTTP_201_CREATED)
+
+#
+# class RegisterUser(django_generic.CreateView):
+#     queryset = User.objects.all()
+#     permission_classes = (AllowAny,)
+#     serializer_class = RegisterSerializer
 
 
 class VerifyUsername(generics.GenericAPIView):
@@ -86,6 +94,7 @@ class ProfileDetailAPIView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return self.queryset.filter(owner=self.request.user)
+
 
 class LogoutAPIView(generics.GenericAPIView):
     serializer_class = LogoutSerializer
